@@ -5,12 +5,14 @@ import os
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from basicsr.utils.download_util import load_file_from_url
 import numpy as np
+from torch.cuda import is_available as cudaIsAvailable
+from torch.backends.mps import is_available as mpsIsAvailable
 
 logger = logging.getLogger(__name__)
 
 from realesrgan import RealESRGANer
 from realesrgan.archs.srvgg_arch import SRVGGNetCompact
-from services.image_upscaler.schema import ModelEntity, UpscaleRequest, ModelName
+from services.image_upscaler.schema import DeviceType, ModelEntity, UpscaleRequest, ModelName
 
 
 def upscale(file: bytes, params: UpscaleRequest) -> tuple[io.BytesIO, str]:
@@ -30,6 +32,12 @@ def upscale(file: bytes, params: UpscaleRequest) -> tuple[io.BytesIO, str]:
         model_path = [model_path, wdn_model_path]
         dni_weight = [params.denoise_strength, 1 - params.denoise_strength]
 
+    # determine the device type (cuda, cpu, mps)
+    device = _get_device_type(params.device_type)
+
+    # For CPU, half precision is not supported
+    half = not params.fp32 if device in [DeviceType.CUDA.value, DeviceType.MPS.value] else False
+
     # restorer
     upsampler = RealESRGANer(
         scale=model_entity.netscale,
@@ -39,8 +47,9 @@ def upscale(file: bytes, params: UpscaleRequest) -> tuple[io.BytesIO, str]:
         tile=params.tile,
         tile_pad=params.tile_pad,
         pre_pad=params.pre_pad,
-        half=not params.fp32,
-        gpu_id=params.gpu_id
+        half=half,
+        gpu_id=params.gpu_id,
+        device=device,
     )
 
     nparr = np.fromstring(file, np.uint8)
@@ -53,7 +62,7 @@ def upscale(file: bytes, params: UpscaleRequest) -> tuple[io.BytesIO, str]:
 
     try:
         if params.face_enhance:
-            face_enhancer = _load_face_enhancer(params.outscale, upsampler)
+            face_enhancer = _load_face_enhancer(params.outscale, upsampler, device=device)
             _, _, output = face_enhancer.enhance(img, has_aligned=False, only_center_face=False, paste_back=True)
         else:
             output, _ = upsampler.enhance(img, outscale=params.outscale)
@@ -124,7 +133,37 @@ def _get_extension(img_mode: str, ext: str) -> str:
         extension = ext
     return extension
 
-def _load_face_enhancer(outscale: float | None, upsampler):
+def _get_device_type(backend_type: DeviceType | str) -> str:
+    """Determines the backend type."""
+
+    match backend_type:
+        case DeviceType.AUTO:
+            if cudaIsAvailable():
+                backend = 'cuda'
+            elif mpsIsAvailable():
+                backend = 'mps'
+            else:
+                backend = 'cpu'
+        case DeviceType.CUDA:
+            if cudaIsAvailable():
+                backend = 'cuda'
+            else:
+                raise RuntimeError('CUDA is not available')
+        case DeviceType.CPU:
+            backend = 'cpu'
+        case DeviceType.MPS:
+            if mpsIsAvailable():
+                backend = 'mps'
+            else:
+                raise RuntimeError('MPS is not available')
+    logger.debug('Using backend: %s', backend)
+    return backend
+
+def _load_face_enhancer(
+    outscale: float | None,
+    upsampler,
+    device: str | None = None,
+):
     """Load the face enhancer model."""
 
     from gfpgan import GFPGANer
@@ -133,5 +172,6 @@ def _load_face_enhancer(outscale: float | None, upsampler):
             upscale=outscale,
             arch='clean',
             channel_multiplier=2,
-            bg_upsampler=upsampler
+            bg_upsampler=upsampler,
+            device=device,
         )

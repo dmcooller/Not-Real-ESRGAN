@@ -11,6 +11,12 @@ class ModelName(str, Enum):
     realesr_animevideov3 = "realesr-animevideov3"
     realesr_general_x4v3 = "realesr-general-x4v3"
 
+class DeviceType(str, Enum):
+    AUTO = "auto"
+    CUDA = "cuda"
+    CPU = "cpu"
+    MPS = "mps"
+
 class ModelEntity(BaseModel):
     model: Any
     netscale: int
@@ -30,6 +36,7 @@ class UpscaleRequest(BaseModel):
     alpha_upsampler: str | None = Field(default="realesrgan", title="The upsampler for the alpha channels", description="The upsampler for the alpha channels. Options: realesrgan | bicubic")
     ext: str | None = Field(default="auto", title="Image extension", description="Image extension. Options: auto | jpg | png, auto means using the same extension as inputs")
     gpu_id: int | None = Field(default=None, title="GPU device to use", description="GPU device to use (default=None) can be 0,1,2 for multi-gpu")
+    device_type: DeviceType | None = Field(default=DeviceType.AUTO, title="Device type", description="Device type. Options: auto | cuda | cpu | mps")
 
     # Allow to use `model_name` as a protected name
     model_config = ConfigDict(protected_namespaces=())

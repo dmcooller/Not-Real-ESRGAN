@@ -7,6 +7,8 @@ from basicsr.utils.download_util import load_file_from_url
 
 from realesrgan import RealESRGANer
 from realesrgan.archs.srvgg_arch import SRVGGNetCompact
+from services.image_upscaler.schema import DeviceType
+from services.image_upscaler.upscaler import _get_device_type
 
 
 def main():
@@ -51,8 +53,14 @@ def main():
         help='Image extension. Options: auto | jpg | png, auto means using the same extension as inputs')
     parser.add_argument(
         '-g', '--gpu-id', type=int, default=None, help='gpu device to use (default=None) can be 0,1,2 for multi-gpu')
+    parser.add_argument('--device', type=str, default='auto', help='device type: auto | cuda | cpu | mps')
 
     args = parser.parse_args()
+
+    # determine the device type (cuda, cpu, mps)
+    device = _get_device_type(args.device)
+    # For CPU, half precision is not supported
+    half = not args.fp32 if device in [DeviceType.CUDA.value, DeviceType.MPS.value] else False
 
     # determine models according to model names
     args.model_name = args.model_name.split('.')[0]
@@ -112,8 +120,9 @@ def main():
         tile=args.tile,
         tile_pad=args.tile_pad,
         pre_pad=args.pre_pad,
-        half=not args.fp32,
-        gpu_id=args.gpu_id)
+        half=half,
+        gpu_id=args.gpu_id,
+        device=device)
 
     if args.face_enhance:  # Use GFPGAN for face enhancement
         from gfpgan import GFPGANer
@@ -122,7 +131,8 @@ def main():
             upscale=args.outscale,
             arch='clean',
             channel_multiplier=2,
-            bg_upsampler=upsampler)
+            bg_upsampler=upsampler,
+            device=device)
     os.makedirs(args.output, exist_ok=True)
 
     if os.path.isfile(args.input):
