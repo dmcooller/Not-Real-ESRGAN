@@ -94,7 +94,7 @@ Other recommended projects:<br>
 1. Clone repo
 
     ```bash
-    git clone https://github.com/xinntao/Real-ESRGAN.git
+    git clone https://github.com/dmcooller/Real-ESRGAN.git
     cd Real-ESRGAN
     ```
 
@@ -107,7 +107,17 @@ Other recommended projects:<br>
     # facexlib and gfpgan are for face enhancement
     pip install facexlib
     pip install gfpgan
+    ```
+    Install main dependencies
+    ```bash
     pip install -r requirements.txt
+    ```
+    Or install main dependencies with API and Sentry support
+    ```bash
+    pip install -r requirements.api.txt
+    ```
+    Finish installation
+    ```bash
     python setup.py develop
     ```
 
