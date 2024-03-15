@@ -10,6 +10,7 @@ class ModelName(str, Enum):
     RealESRGAN_x2plus = "RealESRGAN_x2plus"
     realesr_animevideov3 = "realesr-animevideov3"
     realesr_general_x4v3 = "realesr-general-x4v3"
+    UltraSharp_x4 = "UltraSharp_x4"
 
 class DeviceType(str, Enum):
     AUTO = "auto"

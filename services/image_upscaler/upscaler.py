@@ -106,6 +106,10 @@ def _get_model(model_name: ModelName) -> ModelEntity:
             'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-wdn-x4v3.pth',
             'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth'
         ]
+    elif model_name == ModelName.UltraSharp_x4:  # x4 Ultrasharp model
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+        netscale = 4
+        file_url = ['']
     else:
         raise ValueError("Invalid model name")
     return ModelEntity(model=model, netscale=netscale, file_url=file_url)
