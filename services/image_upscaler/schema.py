@@ -4,7 +4,17 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ModelName(str, Enum):
+class CaseInsensitiveEnum(str, Enum):
+    """Case insensitive enum class to be able to pass values in any case"""
+
+    @classmethod
+    def _missing_(cls, value):
+        for member in cls:
+            if member.value.lower() == value.lower():
+                return member
+        raise ValueError(f"Value must be one of {[item.value for item in cls]}")
+
+class ModelName(CaseInsensitiveEnum):
     RealESRGAN_x4plus = "RealESRGAN_x4plus"
     RealESRGAN_x4plus_anime_6B = "RealESRGAN_x4plus_anime_6B"
     RealESRGAN_x2plus = "RealESRGAN_x2plus"

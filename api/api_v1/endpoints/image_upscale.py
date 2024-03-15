@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
-from services.image_upscaler.schema import UpscaleRequest
+from services.image_upscaler.schema import UpscaleRequest, ModelName
 from services.image_upscaler.upscaler import upscale
 
 router = APIRouter()
@@ -18,3 +18,7 @@ async def upscale_image(
         raise HTTPException(status_code=500, detail=f"Error: {error}") from error
 
     return StreamingResponse(img, media_type=f"image/{ext}")
+
+@router.get("/models-list/")
+def get_models_list():
+    return {"models": [model.name for model in ModelName]}
