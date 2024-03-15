@@ -91,6 +91,10 @@ def main():
             'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-wdn-x4v3.pth',
             'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth'
         ]
+    elif args.model_name == 'UltraSharp_x4':  # x4 Ultrasharp model
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+        netscale = 4
+        file_url = ['https://github.com/dmcooller/Not-Real-ESRGAN/releases/download/v0.3.1/UltraSharp_x4.pth']
 
     # determine model paths
     if args.model_path is not None:

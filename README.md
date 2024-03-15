@@ -94,8 +94,8 @@ Other recommended projects:<br>
 1. Clone repo
 
     ```bash
-    git clone https://github.com/dmcooller/Real-ESRGAN.git
-    cd Real-ESRGAN
+    git clone https://github.com/dmcooller/Not-Real-ESRGAN.git
+    cd Not-Real-ESRGAN
     ```
 
 1. Install dependent packages
@@ -154,6 +154,7 @@ We have provided five models:
 2. realesrnet-x4plus
 3. realesrgan-x4plus-anime (optimized for anime images, small model size)
 4. realesr-animevideov3 (animation video)
+5. ultrasharp-x4
 
 You can use the `-n` argument for other models, for example, `./realesrgan-ncnn-vulkan.exe -i input.jpg -o output.png -n realesrnet-x4plus`
 
@@ -202,6 +203,7 @@ A common command: python inference_realesrgan.py -n RealESRGAN_x4plus -i infile 
   --face_enhance       Whether to use GFPGAN to enhance face. Default: False
   --fp32               Use fp32 precision during inference. Default: fp16 (half precision).
   --ext                Image extension. Options: auto | jpg | png, auto means using the same extension as inputs. Default: auto
+  --device             Device for inference. Default: auto. Options: auto | cpu | cuda | mps
 ```
 
 #### Inference general images
