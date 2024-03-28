@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.api_v1.api import api_router
 from logger import get_uvicorn_log_config, init_logger
@@ -14,6 +15,13 @@ app = FastAPI(
 )
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOW_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     uvicorn.run(
